@@ -26,6 +26,9 @@
 #include <tasks.h>
 #include "config.h"
 
+#include "esp_netif.h"
+#include "esp_netif_ip_addr.h"
+
 static const char *TAG = "CONFIG";
 static const char *STORAGE = "config";
 
@@ -284,7 +287,7 @@ const config_item_t CONFIG_ITEMS[] = {
         }, {
                 .key = KEY_CONFIG_WIFI_AP_GATEWAY,
                 .type = CONFIG_ITEM_TYPE_IP,
-                .def.uint32 = esp_netif_htonl(esp_netif_ip4_makeu32(192, 168, 4, 1))
+                .def.uint32 = esp_netif_htonl(ESP_IP4TOADDR(192, 168, 4, 1))
         }, {
                 .key = KEY_CONFIG_WIFI_AP_SUBNET,
                 .type = CONFIG_ITEM_TYPE_UINT8,

@@ -18,6 +18,7 @@
 #include <freertos/FreeRTOS.h>
 #include <esp_wifi.h>
 #include <esp_log.h>
+#include <esp_mac.h>   // <-- MACSTR / MAC2STR live here needed for IDF v5 (GN)
 #include <string.h>
 #include <mdns.h>
 #include <math.h>
@@ -32,6 +33,7 @@
 #include <lwip/lwip_napt.h>
 #include "wifi.h"
 #include "config.h"
+
 
 static const char *TAG = "WIFI";
 

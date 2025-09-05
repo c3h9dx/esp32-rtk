@@ -17,8 +17,14 @@
 
 #include <stdbool.h>
 #include <esp_log.h>
-#include <esp_event_base.h>
-#include <sys/socket.h>
+// #include <esp_event_base.h>
+#include <esp_event.h>      // prefer esp_event.h over esp_event_base.h (GN)
+#include <sys/socket.h>     // socket(), accept(), struct sockaddr (not GN)
+#include <netinet/in.h>     // struct sockaddr_in / sockaddr_in6, htons/ntohs (GN)
+#include <arpa/inet.h>      // inet_ntop/inet_pton (if you use them) (GN)
+
+
+
 #include <mdns.h>
 #include <tasks.h>
 #include <status_led.h>
@@ -124,7 +130,8 @@ static void ntrip_caster_task(void *ctx) {
             destroy_socket(&sock_client);
 
             struct sockaddr_in6 source_addr;
-            size_t addr_len = sizeof(source_addr);
+            // size_t addr_len = sizeof(source_addr);
+            socklen_t  addr_len = sizeof(source_addr); // stricter type in IDF v5 (GN)
             sock_client = accept(sock, (struct sockaddr *)&source_addr, &addr_len);
             ERROR_ACTION(TAG, sock_client < 0, goto _error, "Could not accept connection: %d %s", errno, strerror(errno))
 

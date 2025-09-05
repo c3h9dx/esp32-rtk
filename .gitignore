@@ -12,6 +12,7 @@ _deps
 cmake-build-debug
 cmake-build-debug-xtensa-esp32-elf
 
+managed_components
 build
 sdkconfig.old
 .idea/

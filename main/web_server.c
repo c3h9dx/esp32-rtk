@@ -29,11 +29,21 @@
 #include <util.h>
 #include <lwip/inet.h>
 #include <esp_ota_ops.h>
-#include <esp_netif_sta_list.h>
+// #include <esp_netif_sta_list.h> In ESP-IDF ≥5.0 that header (and its API) was removed. (GN)
 #include <stream_stats.h>
 #include <esp32/rom/crc.h>
 #include <lwip/sockets.h>
 #include "web_server.h"
+
+// used to replace <esp_netif_sta_list.h> (GN)
+#include "esp_wifi.h"
+#include "esp_event.h"
+#include "esp_wifi_ap_get_sta_list.h"   // new in IDF ≥5.0 (GN)
+#include "esp_netif.h"
+#include "esp_mac.h"                    // MACSTR/MAC2STR (GN)
+#include "esp_timer.h"
+
+#include <inttypes.h>   // at top of file (GN)
 
 // Max length a file path can have on storage
 #define FILE_PATH_MAX (ESP_VFS_PATH_MAX + CONFIG_SPIFFS_OBJ_NAME_LEN)
@@ -189,14 +199,32 @@ static esp_err_t hotspot_auth(httpd_req_t *req) {
     // TODO: Correctly read IPv4?
     // ERROR_ACTION(TAG, client_addr.sin6_family != AF_INET, goto _auth_error, "IPv6 connections not supported, IP family %d", client_addr.sin6_family);
 
-    wifi_sta_list_t *ap_sta_list = wifi_ap_sta_list();
-    esp_netif_sta_list_t esp_netif_ap_sta_list;
-    esp_netif_get_sta_list(ap_sta_list, &esp_netif_ap_sta_list);
+    // wifi_sta_list_t *ap_sta_list = wifi_ap_sta_list();
+    // esp_netif_sta_list_t esp_netif_ap_sta_list;
+    // esp_netif_get_sta_list(ap_sta_list, &esp_netif_ap_sta_list);
 
-    // TODO: Correctly read IPv4?
-    for (int i = 0; i < esp_netif_ap_sta_list.num; i++) {
-        if (esp_netif_ap_sta_list.sta[i].ip.addr == client_addr.sin6_addr.un.u32_addr[3]) return ESP_OK;
+    // // TODO: Correctly read IPv4?
+    // for (int i = 0; i < esp_netif_ap_sta_list.num; i++) {
+    //     if (esp_netif_ap_sta_list.sta[i].ip.addr == client_addr.sin6_addr.un.u32_addr[3]) return ESP_OK;
+    // }
+
+    // new IDF v5 style below (GN)
+    wifi_sta_list_t wifi_sta_list = {0};
+    ESP_ERROR_CHECK(esp_wifi_ap_get_sta_list(&wifi_sta_list)); // MACs only
+
+    wifi_sta_mac_ip_list_t mac_ip_list = {0};
+    ESP_ERROR_CHECK(esp_wifi_ap_get_sta_list_with_ip(&wifi_sta_list, &mac_ip_list)); // MAC + IPv4
+
+    for (int i = 0; i < mac_ip_list.num; ++i)
+    {
+        const esp_netif_pair_mac_ip_t *e = &mac_ip_list.sta[i];
+        ESP_LOGI(TAG, "STA " MACSTR "  IP: " IPSTR, MAC2STR(e->mac), IP2STR(&e->ip));
     }
+    // for (int i = 0; i < mac_ip_list.num; ++i)
+    // {
+    //     const wifi_sta_mac_ip_t *e = &mac_ip_list.sta[i];
+    //     ESP_LOGI(TAG, "STA " MACSTR "  IP: " IPSTR, MAC2STR(e->mac), IP2STR(&e->ip));
+    // }
 
     //_auth_error:
     httpd_resp_set_status(req, "401"); // Unauthorized
@@ -309,8 +337,7 @@ static esp_err_t file_check_etag_hash(httpd_req_t *req, char *file_hash_path, ch
     ERROR_ACTION(TAG, read != 1, return ESP_FAIL,
             "Could not read hash file %s: %d %s", file_hash_path,
             errno, strerror(errno));
-
-    snprintf(etag, etag_size, "\"%08X\"", crc);
+   snprintf(etag, etag_size, "\"%08" PRIX32 "\"", crc);
 
     // Compare to header sent by client
     size_t if_none_match_length = httpd_req_get_hdr_value_len(req, "If-None-Match") + 1;
