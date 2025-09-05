@@ -84,9 +84,11 @@ void app_main()
 
     esp_reset_reason_t reset_reason = esp_reset_reason();
 
-    const esp_app_desc_t *app_desc = esp_ota_get_app_description();
+    // const esp_app_desc_t *app_desc = esp_ota_get_app_description();
+    const esp_app_desc_t *app_desc = esp_app_get_description(); // new v5 (GN)
     char elf_buffer[17];
-    esp_ota_get_app_elf_sha256(elf_buffer, sizeof(elf_buffer));
+    // esp_ota_get_app_elf_sha256(elf_buffer, sizeof(elf_buffer));
+    esp_app_get_elf_sha256(elf_buffer, sizeof(elf_buffer)); // new v5 (GN)
 
     uart_nmea("$PESP,INIT,START,%s,%s", app_desc->version, reset_reason_name(reset_reason));
 
@@ -137,11 +139,14 @@ void app_main()
 
     wait_for_ip();
 
-    sntp_setoperatingmode(SNTP_OPMODE_POLL);
-    sntp_setservername(0, "pool.ntp.org");
+    // sntp_setoperatingmode(SNTP_OPMODE_POLL);
+    esp_sntp_setoperatingmode(SNTP_OPMODE_POLL); // new for IDF v5 (GN)
+    // sntp_setservername(0, "pool.ntp.org");
+    esp_sntp_setservername(0, "pool.ntp.org"); // new for IDF v5 (GN)
     sntp_set_sync_mode(SNTP_SYNC_MODE_SMOOTH);
     sntp_set_time_sync_notification_cb(sntp_time_set_handler);
-    sntp_init();
+    // sntp_init(); // old
+    esp_sntp_init(); // new for IDF v5 (GN)
 
 #ifdef DEBUG_HEAP
     while (true) {

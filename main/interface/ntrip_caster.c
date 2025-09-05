@@ -193,8 +193,10 @@ static void ntrip_caster_task(void *ctx) {
                         NEWLINE \
                         "%s",
                         ntrip_agent ? "SOURCETABLE" : "HTTP/1.0",
-                        NTRIP_CASTER_NAME, &esp_ota_get_app_description()->version[1],
-                        strlen(stream), stream);
+                        // NTRIP_CASTER_NAME, &esp_ota_get_app_description()->version[1],
+                        // strlen(stream), stream);
+                        NTRIP_CASTER_NAME, &esp_app_get_description()->version[1],
+                        strlen(stream), stream); // new in IDF v5
 
                 int err = write(sock_client, buffer, strlen(buffer));
                 if (err < 0) ESP_LOGE(TAG, "Could not send response to client: %d %s", errno, strerror(errno));

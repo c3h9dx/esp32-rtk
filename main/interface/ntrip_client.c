@@ -136,8 +136,17 @@ static void ntrip_client_task(void *ctx) {
                 "User-Agent: NTRIP %s/%s" NEWLINE \
                 "Authorization: %s" NEWLINE
                 NEWLINE
+                , mountpoint, NTRIP_CLIENT_NAME, &esp_app_get_description()->version[1], authorization); // New in IDV v5 (GN)
+        free(authorization);
+        
+        /*
+        snprintf(buffer, BUFFER_SIZE, "GET /%s HTTP/1.1" NEWLINE \
+                "User-Agent: NTRIP %s/%s" NEWLINE \
+                "Authorization: %s" NEWLINE
+                NEWLINE
                 , mountpoint, NTRIP_CLIENT_NAME, &esp_ota_get_app_description()->version[1], authorization);
         free(authorization);
+        */
 
         int err = write(sock, buffer, strlen(buffer));
         ERROR_ACTION(TAG, err < 0, goto _error, "Could not send request to caster: %d %s", errno, strerror(errno));

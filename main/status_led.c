@@ -21,7 +21,9 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 #include "freertos/semphr.h"
-#include "freertos/xtensa_api.h"
+// #include "freertos/xtensa_api.h"
+#include <xtensa_api.h> // new locationin IDF v5 (GN)
+
 #include "freertos/portmacro.h"
 #include "status_led.h"
 #include <sys/queue.h>

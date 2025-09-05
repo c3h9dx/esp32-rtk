@@ -270,10 +270,12 @@ static esp_err_t core_dump_get_handler(httpd_req_t *req) {
 
     httpd_resp_set_type(req, "application/octet-stream");
 
-    const esp_app_desc_t *app_desc = esp_ota_get_app_description();
+    // const esp_app_desc_t *app_desc = esp_ota_get_app_description();
+    const esp_app_desc_t *app_desc = esp_app_get_description(); // new for IDF v5 (GN)
 
     char elf_sha256[7];
-    esp_ota_get_app_elf_sha256(elf_sha256, sizeof(elf_sha256));
+    // esp_ota_get_app_elf_sha256(elf_sha256, sizeof(elf_sha256));
+    esp_app_get_elf_sha256(elf_sha256, sizeof(elf_sha256)); // new for IDF v5 (GN)
 
     time_t t = time(NULL);
     char date[20] = "\0";
@@ -346,13 +348,15 @@ static esp_err_t file_check_etag_hash(httpd_req_t *req, char *file_hash_path, ch
         httpd_req_get_hdr_value_str(req, "If-None-Match", if_none_match, if_none_match_length);
 
         bool header_match = strcmp(etag, if_none_match) == 0;
-        free(if_none_match);
+        // free(if_none_match);
 
         // Matching ETag, return not modified
         if (header_match) {
+            free(if_none_match); // (GN)
             return ESP_OK;
         } else {
             ESP_LOGW(TAG, "ETag for file %s sent by client does not match (%s != %s)", file_hash_path, etag, if_none_match);
+            free(if_none_match); // (GN)
             return ESP_ERR_INVALID_CRC;
         }
     }
@@ -452,7 +456,8 @@ static esp_err_t config_get_handler(httpd_req_t *req) {
 
     cJSON *root = cJSON_CreateObject();
 
-    const esp_app_desc_t *app_desc = esp_ota_get_app_description();
+    // const esp_app_desc_t *app_desc = esp_ota_get_app_description();
+    const esp_app_desc_t *app_desc = esp_app_get_description(); // new for IDF v5 (GN)
     cJSON_AddStringToObject(root, "version", app_desc->version);
 
     int config_item_count;
