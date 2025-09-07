@@ -182,30 +182,42 @@ void status_led_init() {
             .timer_sel = LEDC_TIMER_0
     };
 
+    #if CONFIG_STATUS_LED_RED_GPIO != -1
     ledc_config.channel = STATUS_LED_RED_CHANNEL;
     ledc_config.gpio_num = STATUS_LED_RED_GPIO;
     ledc_channel_config(&ledc_config);
+    #endif
 
+    #if STATUS_LED_GREEN_GPIO != -1
     ledc_config.channel = STATUS_LED_GREEN_CHANNEL;
     ledc_config.gpio_num = STATUS_LED_GREEN_GPIO;
     ledc_channel_config(&ledc_config);
+    #endif
 
+    #if STATUS_LED_BLUE_GPIO != -1
     ledc_config.channel = STATUS_LED_BLUE_CHANNEL;
     ledc_config.gpio_num = STATUS_LED_BLUE_GPIO;
     ledc_channel_config(&ledc_config);
+    #endif
 
+    #if STATUS_LED_SLEEP_GPIO != -1    
     ledc_config.channel = STATUS_LED_SLEEP_CHANNEL;
     ledc_config.gpio_num = STATUS_LED_SLEEP_GPIO;
     ledc_channel_config(&ledc_config);
+    #endif
 
+    #if STATUS_LED_RSSI_GPIO != -1
     ledc_config.duty = 0;
     ledc_config.channel = STATUS_LED_RSSI_CHANNEL;
     ledc_config.gpio_num = STATUS_LED_RSSI_GPIO;
     ledc_channel_config(&ledc_config);
-
+    #endif
+    
+    #if STATUS_LED_ASSOC_GPIO != -1
     ledc_config.channel = STATUS_LED_ASSOC_CHANNEL;
     ledc_config.gpio_num = STATUS_LED_ASSOC_GPIO;
     ledc_channel_config(&ledc_config);
+    #endif
 
     ledc_fade_func_install(0);
 
